@@ -1,0 +1,10 @@
+{
+  "name": "Runi_bot",
+  "version": "1.0.0",
+  "description": "Runi's Custom Discord Bot",
+  "main": "bot.js",
+  "author": "Runi K.",
+  "dependencies": {
+    "discord.js": "^11.3.2"
+  }
+}
