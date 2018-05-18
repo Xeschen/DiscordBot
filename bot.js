@@ -14,27 +14,68 @@ client.on("message", (message) => {
         var cmd = args[0];
         
         switch(cmd){
-            case '시작':
-                message.channel.send("르니봇 가동 시작!");
+            case '생존':
+                message.channel.send("르니봇 가동중!");
                 break;
                 
-            case 'roll':
-                var req = args[1];
                 
-                if(req.split('d').length<2)
+            case 'roll':
+                var req = args.slice(1);
+                req = req.join(' ');
+//                console.log(req);
+                var diceRegex = /([0-9]+)[d]([0-9]+)(([+|-])([0-9]+))?([\s]+[t][e][s][t][\s]+([0-9]+))?/g;
+                if(diceRegex.test(req) == false)
                     message.channel.send("잘못된 구문입니다.");
                 else{
-                    var diceNum = req.split('d')[0];
-                    var diceSize = req.split('d')[1];
-                    message.channel.send(diceNum+" 개의 "+diceSize+"면체 주사위");
-                    var dices = 0;
-                    var diceMessage = "";
-                    for(var i=0; i<diceNum; i++){
+                    var diceComp = req.split(diceRegex);
+                    var diceNum = diceComp[1];
+                    var diceSize = diceComp[2];
+                    var diceAdd;
+                    if(diceComp[3]){
+                        if(diceComp[4] == '+')
+                            diceAdd = parseInt(diceComp[5]);
+                        else
+                            diceAdd = 0 - parseInt(diceComp[5]);
+                    }
+                    else
+                        diceAdd = 0;
+                    var test;
+                    if(diceComp[7])
+                        test = diceComp[7];
+//                    message.channel.send(diceComp);
+                    
+                    if(!test){
+                        var dices = 0;
+                        var diceMessage = "";
+                        for(var i=0; i<diceNum-1; i++){
+                            var num = Math.floor(Math.random()*diceSize)+1;
+                            dices += num;
+                            diceMessage += (num + " + ");
+                        }
                         var num = Math.floor(Math.random()*diceSize)+1;
                         dices += num;
-                        diceMessage += (num + " + ");
+                        diceMessage += num;
+                        if(diceAdd){
+                            diceMessage += (" (" + diceComp[4] + " " + diceComp[5] +")");
+                            dices += diceAdd;
+                        }
+                        message.channel.send(diceMessage+" = "+dices);
                     }
-                    message.channel.send(diceMessage+"= "+dices);                    
+                    else{
+                        var success = 0;
+                        var diceMessage = "";
+                        for(var i=0; i<diceNum-1; i++){
+                            var num = Math.floor(Math.random()*diceSize)+1+diceAdd;
+                            if(num >= test)
+                                success += 1;
+                            diceMessage += (num + ", ");
+                        }
+                        var num = Math.floor(Math.random()*diceSize)+1+diceAdd;
+                        if(num >= test)
+                            success += 1;
+                        diceMessage += (num + " ==> " + success + "개 성공");
+                        message.channel.send(diceMessage);
+                    }
                 }
                 break;
                 
