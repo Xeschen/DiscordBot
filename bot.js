@@ -8,6 +8,18 @@ client.on("ready", () => {
     console.log("I am ready!");
 });
 
+var record = 0;
+var anchorId = 0;
+var msgAry;
+
+function msgPrint(message, messages){
+//    console.log(messages.values()[0]);
+    msgAry = Array.from(messages.values());
+    for(var i=messages.size-2; i>0; i--){
+        message.channel.send(msgAry[i]['author']['username'] + " : " + msgAry[i]['content']);
+    }
+}
+
 client.on("message", (message) => {
     if (message.content.substring(0,1) == '!') {
         var args = message.content.substring(1).split(' ');
@@ -77,6 +89,27 @@ client.on("message", (message) => {
                         message.channel.send(diceMessage);
                     }
                 }
+                break;
+
+            case '녹화':
+                if(record == 0){
+                    record = 1;
+                    message.channel.send("Opfert eure Herzen! 지금부터 녹화를 시작합니다.")
+                    anchorId = message.id;
+                    console.log(anchorId);
+                }
+                else{
+                    message.channel.send("이미 녹화중입니다!");
+                }
+                break;
+                
+            case '마무리':
+                var msgrcd;
+                message.channel.fetchMessages({after: anchorId})
+                    .then(messages => msgPrint(message, messages));
+                
+                anchorId = 0;
+                record = 0;
                 break;
                 
             case '종료':
