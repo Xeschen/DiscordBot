@@ -1,5 +1,5 @@
-const Discord = require("discord.js");
 
+const Discord = require("discord.js");
 const client = new Discord.Client();
 
 const config = require("./auth.json");
@@ -13,10 +13,42 @@ var anchorId = 0;
 var msgAry;
 
 function msgPrint(message, messages){
-//    console.log(messages.values()[0]);
     msgAry = Array.from(messages.values());
+    console.log(msgAry);
+    var startTime = new Date(msgAry[messages.size-2]['createdTimestamp']);
+    var endTime = new Date(msgAry[1]['createdTimestamp']);
+    
+    message.channel.send("시작 시각: " + startTime);
     for(var i=messages.size-2; i>0; i--){
-        message.channel.send(msgAry[i]['author']['username'] + " : " + msgAry[i]['content']);
+        var nickname = msgAry[i]['member']['nickname'];
+        var content = msgAry[i]['content'];
+        if(msgAry[i]['author']['username'] == 'Runi_bot')
+            nickname = 'Runi_bot';
+        if(msgAry[i]['attachments'].size > 0){
+            contents = Array.from(msgAry[i]['attachments']);
+            var arr = [];
+            for(var j=0; j<contents.length; j++){
+                var filename = contents[j][1]['filename'];
+                arr.push(filename);
+            }
+            content = arr.join(", ");
+        }
+        message.channel.send(nickname + " : " + content);
+    }
+    message.channel.send("종료 시각: " + endTime);
+    
+    for(var i=messages.size-2; i>0; i--){
+        if(msgAry[i]['attachments'].size > 0){
+            contents = Array.from(msgAry[i]['attachments']);
+            for(var j=0; j<contents.length; j++){
+                var filename = contents[j][1]['filename'];
+                var fileurl = contents[j][1]['url'];
+                message.channel.send("첨부파일: "+filename);
+                message.channel.send({
+                    files: [fileurl]
+                })
+            }
+        }
     }
 }
 
@@ -31,7 +63,7 @@ client.on("message", (message) => {
                 break;
                 
                 
-            case 'roll':
+            case 'roll':{
                 var req = args.slice(1);
                 req = req.join(' ');
 //                console.log(req);
@@ -89,7 +121,7 @@ client.on("message", (message) => {
                         message.channel.send(diceMessage);
                     }
                 }
-                break;
+                break;}
 
             case '녹화':
                 if(record == 0){
