@@ -64,7 +64,9 @@ client.on("message", (message) => {
             }
             
             case 'music':{
-                var music = args.slice(1).join(' ').slice(1);
+                var music = args.slice(1).join(' ');
+                if(args.slice(1).length > 1)
+                    music = music.slice(1);
                 console.log(music);
                 const ytdl = require('ytdl-core');
                 const streamOptions = { seek: 0, volume: 1 };
