@@ -10,10 +10,10 @@ client.on("ready", () => {
 
 var record = 0;
 var anchorId = 0;
-var msgAry;
+var voiceChannel;
 
 function msgPrint(message, messages){
-    msgAry = Array.from(messages.values());
+    var msgAry = Array.from(messages.values());
     console.log(msgAry);
     var startTime = new Date(msgAry[messages.size-2]['createdTimestamp']);
     var endTime = new Date(msgAry[1]['createdTimestamp']);
@@ -53,15 +53,51 @@ function msgPrint(message, messages){
 }
 
 client.on("message", (message) => {
-    if (message.content.substring(0,1) == '!') {
+    if (message.content.substring(0,1) == '/') {
         var args = message.content.substring(1).split(' ');
         var cmd = args[0];
         
         switch(cmd){
-            case '생존':
+            case 'alive':{
                 message.channel.send("르니봇 가동중!");
                 break;
-                
+            }
+            
+            case 'music':{
+                var music = args.slice(1).join(' ').slice(1);
+                console.log(music);
+                const ytdl = require('ytdl-core');
+                const streamOptions = { seek: 0, volume: 1 };
+                voiceChannel = message.member.voiceChannel;
+                if(voiceChannel != null){
+                    if(music.split('https://www.youtube.com/watch?').length > 1){
+                        voiceChannel.join().then(connection =>{
+                            const stream = ytdl(music, { filter : 'audioonly' });
+                            const dispatcher = connection.playStream(stream, streamOptions);
+                            dispatcher.on("end", end => {
+                                voiceChannel.leave();
+                            });
+                        }).catch(err => console.log(err));
+                    } else if(music != null){
+                        voiceChannel.join().then(connection =>{
+                            const dispatcher = connection.playFile(music);
+                            dispatcher.on("end", end => {
+                                voiceChannel.leave();
+                            });
+                        }).catch(err => console.log(err));
+                    } else{
+                        message.channel.send("재생하려는 음악의 주소를 입력해주세요.");
+                    }
+                } else{
+                    message.channel.send("사용자가 보이스 채널에 들어있지 않습니다.");
+                }
+                break;
+            }
+            
+            case 'stopmusic':{
+                voiceChannel.leave();
+                break;
+            }
                 
             case 'roll':{
                 var req = args.slice(1);
@@ -123,7 +159,7 @@ client.on("message", (message) => {
                 }
                 break;}
 
-            case '녹화':
+            case 'start':{
                 if(record == 0){
                     record = 1;
                     message.channel.send("Opfert eure Herzen! 지금부터 녹화를 시작합니다.")
@@ -134,8 +170,9 @@ client.on("message", (message) => {
                     message.channel.send("이미 녹화중입니다!");
                 }
                 break;
+            }
                 
-            case '마무리':
+            case 'end':{
                 var msgrcd;
                 message.channel.fetchMessages({after: anchorId})
                     .then(messages => msgPrint(message, messages));
@@ -143,11 +180,13 @@ client.on("message", (message) => {
                 anchorId = 0;
                 record = 0;
                 break;
+            }
                 
-            case '종료':
+            case 'exit':{
                 message.channel.send("르니봇은 자러 가요!")
                     .then(client.destroy());
                 break;
+            }
         }
     }
 });
